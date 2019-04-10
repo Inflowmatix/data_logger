@@ -1,0 +1,16 @@
+_build/
+cover/
+deps/
+erl_crash.dump
+*.ez
+*.eqc
+current_counterexample
+.eqc-info
+rel/
+.tool-versions-e
+.elixir_ls/
+.vscode/
+.idea/
+*.iml
+.DS_Store
+.#*
