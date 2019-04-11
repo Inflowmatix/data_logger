@@ -22,3 +22,8 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 data_logger-*.tar
 
+.elixir_ls/
+.vscode/
+.idea/
+*.iml
+.DS_Store
