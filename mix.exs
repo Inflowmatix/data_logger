@@ -6,6 +6,7 @@ defmodule DataLogger.MixProject do
   def project do
     [
       app: :data_logger,
+      version: @version,
       deps: deps(),
       description:
         "A toolkit for data mapping and language integrated query for ElixirA logger that can be used to log any kind of data to remote or local destinations",
