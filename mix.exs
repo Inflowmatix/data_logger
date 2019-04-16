@@ -5,7 +5,7 @@ defmodule DataLogger.MixProject do
     [
       app: :data_logger,
       version: "0.1.0",
-      elixir: "~> 1.7",
+      elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       dialyzer: [plt_add_apps: []],
       elixirc_paths: elixirc_paths(Mix.env()),

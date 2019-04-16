@@ -3,9 +3,15 @@ defmodule DataLogger.LoggingSupervisor do
 
   alias __MODULE__, as: Mod
 
-  def child_spec(_), do: Supervisor.Spec.supervisor(Mod, [])
+  @default_destinations []
+  @default_config [
+    destinations: @default_destinations
+  ]
 
-  def start_link, do: DynamicSupervisor.start_link(Mod, nil, name: Mod)
+  def child_spec(config \\ @default_config), do: Supervisor.Spec.supervisor(Mod, config)
+
+  def start_link(config \\ @default_config),
+    do: DynamicSupervisor.start_link(Mod, config, name: Mod)
 
   def start_child(prefix, name) do
     spec = {DataLogger.LoggerSupervisor, prefix: prefix, name: name}
@@ -14,5 +20,6 @@ defmodule DataLogger.LoggingSupervisor do
   end
 
   @impl true
-  def init(_), do: DynamicSupervisor.init(strategy: :one_for_one)
+  def init(config),
+    do: DynamicSupervisor.init(strategy: :one_for_one, extra_arguments: [config])
 end

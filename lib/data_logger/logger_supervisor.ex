@@ -12,16 +12,21 @@ defmodule DataLogger.LoggerSupervisor do
 
   alias __MODULE__, as: Mod
 
+  @default_destinations []
+  @default_config [
+    destinations: @default_destinations
+  ]
+
   @doc false
-  def start_link(prefix: prefix, name: name) do
-    Supervisor.start_link(Mod, prefix, name: name)
+  def start_link(config \\ @default_config, prefix: prefix, name: name) do
+    Supervisor.start_link(Mod, {prefix, config}, name: name)
   end
 
   @impl true
-  def init(prefix) do
+  def init({prefix, config}) do
     children =
-      :data_logger
-      |> Application.get_env(:destinations, [])
+      config
+      |> Keyword.get(:destinations, @default_destinations)
       |> Enum.map(fn {mod, options} ->
         name =
           {:via, Registry, {DataLogger.Registry, {DataLogger.Logger, {prefix, mod, options}}}}

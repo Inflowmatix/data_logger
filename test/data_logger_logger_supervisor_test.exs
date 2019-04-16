@@ -1,15 +1,19 @@
 defmodule DataLogger.LoggerSupervisorTest do
   use ExUnit.Case
 
-  alias DataLogger.MemoryDestination
+  alias DataLogger.Testing.MemoryDestination
   alias DataLogger.LoggerSupervisor
   alias DataLogger.Logger, as: LoggerWorker
 
   setup do
-    {:ok, destination_pid} = MemoryDestination.start_link()
+    {:ok, destination_pid} = start_supervised(MemoryDestination)
+
+    config = [
+      destinations: Application.get_env(:data_logger, :destinations)
+    ]
 
     {:ok, supervisor_pid} =
-      LoggerSupervisor.start_link(
+      LoggerSupervisor.start_link(config,
         prefix: :green,
         name: :green_test_supervisor
       )
