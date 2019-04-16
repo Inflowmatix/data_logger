@@ -6,8 +6,6 @@ defmodule DataLogger.LoggerSupervisorTest do
   alias DataLogger.Logger, as: LoggerWorker
 
   setup do
-    {:ok, destination_pid} = start_supervised(MemoryDestination)
-
     config = [
       destinations: Application.get_env(:data_logger, :destinations)
     ]
@@ -18,10 +16,7 @@ defmodule DataLogger.LoggerSupervisorTest do
         name: :green_test_supervisor
       )
 
-    %{
-      destination_pid: destination_pid,
-      supervisor: supervisor_pid
-    }
+    %{supervisor: supervisor_pid}
   end
 
   test "supervises as many worker processes as configured destinations", %{

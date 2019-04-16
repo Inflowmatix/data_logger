@@ -1,4 +1,11 @@
 defmodule DataLogger.LoggingSupervisor do
+  @moduledoc """
+  A `DynamicSupervisor` which adds a new `DataLogger.LoggingSupervisor` and its sub-tree of workers to its
+  children, whnever a new `prefix`, for which data haven't been logged until now is passed to `DataLogger.log/2`.
+
+  Using this, the `DataLogger` application is building its supervision tree lazy and on demand.
+  """
+
   use DynamicSupervisor
 
   alias __MODULE__, as: Mod
@@ -8,11 +15,14 @@ defmodule DataLogger.LoggingSupervisor do
     destinations: @default_destinations
   ]
 
+  @doc false
   def child_spec(config \\ @default_config), do: Supervisor.Spec.supervisor(Mod, config)
 
+  @doc false
   def start_link(config \\ @default_config),
     do: DynamicSupervisor.start_link(Mod, config, name: Mod)
 
+  @doc false
   def start_child(prefix, name) do
     spec = {DataLogger.LoggerSupervisor, prefix: prefix, name: name}
 
