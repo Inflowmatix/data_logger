@@ -6,18 +6,13 @@ defmodule DataLogger.LoggerSupervisorTest do
   alias DataLogger.Logger, as: LoggerWorker
 
   setup do
-    {:ok, destination_pid} = MemoryDestination.start_link()
-
     {:ok, supervisor_pid} =
       LoggerSupervisor.start_link(
         prefix: :green,
         name: :green_test_supervisor
       )
 
-    %{
-      destination_pid: destination_pid,
-      supervisor: supervisor_pid
-    }
+    %{supervisor: supervisor_pid}
   end
 
   test "supervises as many worker processes as configured destinations", %{
