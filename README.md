@@ -23,7 +23,7 @@ The package can be installed by adding `data_logger` to your list of dependencie
 ```elixir
 def deps do
   [
-    {:data_logger, "~> 0.1.0"}
+    {:data_logger, "~> 0.2.0"}
   ]
 end
 ```
@@ -38,8 +38,8 @@ A destination can be configured using the the application configuration:
 
     config :data_logger,
       destinations: [
-        {DestinationImplementation, [option_one: value_one, option_two: value_two]},
-        {AnoterDestinationImplementation, [option: value]}
+        {DestinationImplementation, %{option_one: value_one, option_two: value_two}},
+        {AnoterDestinationImplementation, %{option: value}}
       ]
 
 When such a configuration is defined, chunks of data, represented by Elixir terms
@@ -61,7 +61,7 @@ In the *red* and *green* example the configuration would be:
 
     config :data_logger,
       destinations: [
-        {RelationalDBDestination, [host: "localhost", user: "inflowmatix", password: "secret"]}
+        {RelationalDBDestination, %{host: "localhost", user: "inflowmatix", password: "secret"}}
       ]
 
 The destination should be a module, which implements the `DataLogger.Destination` protocol.
@@ -76,7 +76,7 @@ This can be changed if in the options of the destination `:send_async` is set to
 
     config :data_logger,
       destinations: [
-        {RelationalDBDestination, [host: "localhost", user: "inflowmatix", password: "secret", send_async: true]}
+        {RelationalDBDestination, %{host: "localhost", user: "inflowmatix", password: "secret", send_async: true}}
       ]
 
 Now every chunk of data logged with that `prefix` will be send in its own supervised process.

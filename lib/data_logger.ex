@@ -6,8 +6,8 @@ defmodule DataLogger do
 
       config :data_logger,
         destinations: [
-          {DestinationImplementation, [option_one: value_one, option_two: value_two]},
-          {AnotherDestinationImplementation, [option: value]}
+          {DestinationImplementation, %{option_one: value_one, option_two: value_two}},
+          {AnotherDestinationImplementation, %{option: value}}
         ]
 
   When such a configuration is defined, chunks of data, represented by Elixir terms
@@ -29,7 +29,7 @@ defmodule DataLogger do
 
       config :data_logger,
         destinations: [
-          {RelationalDBDestination, [host: "localhost", user: "inflowmatix", password: "secret"]}
+          {RelationalDBDestination, %{host: "localhost", user: "inflowmatix", password: "secret"}}
         ]
 
   The destination should be a module, which implements the `DataLogger.Destination` protocol.
@@ -44,7 +44,7 @@ defmodule DataLogger do
 
       config :data_logger,
         destinations: [
-          {RelationalDBDestination, [host: "localhost", user: "inflowmatix", password: "secret", send_async: true]}
+          {RelationalDBDestination, %{host: "localhost", user: "inflowmatix", password: "secret", send_async: true}}
         ]
 
   Now every chunk of data logged with that `prefix` will be sent in its own supervised process.

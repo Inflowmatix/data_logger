@@ -35,7 +35,7 @@ defmodule DataLogger.Destination do
 
       config :data_logger,
         destinations: [
-          {RelationalDBDestination, [host: "localhost", user: "inflowmatix", password: "secret", send_async: true]}
+          {RelationalDBDestination, %{host: "localhost", user: "inflowmatix", password: "secret", send_async: true}}
         ]
   """
 
