@@ -16,7 +16,7 @@ defmodule DataLogger.Application do
     additional_children =
       :data_logger
       |> Application.get_env(:destinations, [])
-      |> Enum.any?(fn {_, options} -> Map.get(options, :send_async, false) end)
+      |> Enum.any?(fn {_, options} -> options[:send_async] end)
       |> if(
         do: [{Task.Supervisor, name: DataLogger.TaskSupervisor}, LoggingSupervisor],
         else: [LoggingSupervisor]
