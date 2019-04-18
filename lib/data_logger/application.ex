@@ -26,7 +26,7 @@ defmodule DataLogger.Application do
 
     additional_children =
       destinations
-      |> Enum.any?(fn {_, options} -> Keyword.get(options, :send_async, false) end)
+      |> Enum.any?(fn {_, options} -> options[:send_async] end)
       |> if(
         do: [
           {Task.Supervisor, name: DataLogger.TaskSupervisor},

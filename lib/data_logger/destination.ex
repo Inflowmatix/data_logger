@@ -6,6 +6,9 @@ defmodule DataLogger.Destination do
   An implementation should handle errors and retries by using the optional callbacks
   `DataLogger.Destination.on_error/4` or/and `DataLogger.Destination.on_success/4`.
   These functions are called with the result of the call to the `DataLogger.Destination.send_data/4` function.
+  Also an implementation can have some custom initialization, using the optional callback `DataLogger.Destination.init/1` which
+  gets the configured options from the config and can return modified options.
+  By default it returns what is passed to it.
 
   A possible implementation could look like this:
 
@@ -37,14 +40,23 @@ defmodule DataLogger.Destination do
   """
 
   @type prefix :: atom() | String.t()
-  @type(send_result :: :ok | {:ok, result :: term()}, {:error, reason :: term()})
+  @type options :: map()
+  @type send_result ::
+          :ok
+          | {:ok, result :: term()}
+          | {:error, reason :: term()}
+          | {:ok, result :: term(), options()}
+          | {:error, reason :: term(), options()}
 
-  @callback send_data(prefix(), data :: term(), options :: keyword()) :: send_result()
+  @callback send_data(prefix(), data :: term(), options()) :: send_result()
 
-  @callback on_error(error :: term(), prefix(), data :: term(), options :: keyword()) :: :ok
-  @callback on_success(result :: term(), prefix(), data :: term(), options :: keyword()) :: :ok
+  @callback initialize(options()) :: options()
 
-  @optional_callbacks on_error: 4,
+  @callback on_error(error :: term(), prefix(), data :: term(), options()) :: :ok
+  @callback on_success(result :: term(), prefix(), data :: term(), options()) :: :ok
+
+  @optional_callbacks initialize: 1,
+                      on_error: 4,
                       on_success: 4
 
   @doc false
@@ -53,12 +65,15 @@ defmodule DataLogger.Destination do
       @behaviour DataLogger.Destination
 
       @doc false
+      def initialize(options), do: options
+
+      @doc false
       def on_error(_, _, _, _), do: :ok
 
       @doc false
       def on_success(_, _, _, _), do: :ok
 
-      defoverridable on_error: 4, on_success: 4
+      defoverridable initialize: 1, on_error: 4, on_success: 4
     end
   end
 end
