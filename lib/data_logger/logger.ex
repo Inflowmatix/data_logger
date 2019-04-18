@@ -65,7 +65,7 @@ defmodule DataLogger.Logger do
        ) do
     action = fn ->
       try do
-        result = Kernel.apply(destination, :send_data, [prefix, data, options])
+        result = destination.send_data(prefix, data, options)
 
         {data, result}
       rescue
@@ -84,8 +84,7 @@ defmodule DataLogger.Logger do
          data,
          %{module: destination, options: options} = state
        ) do
-    destination
-    |> Kernel.apply(:send_data, [prefix, data, options])
+    destination.send_data(prefix, data, options)
     |> handle_send_data_result(prefix, data, state)
   end
 
@@ -101,23 +100,23 @@ defmodule DataLogger.Logger do
        ) do
     case result do
       :ok ->
-        Kernel.apply(destination, :on_success, [:ok, prefix, data, options])
+        destination.on_success(:ok, prefix, data, options)
         state
 
       {:ok, reason} ->
-        Kernel.apply(destination, :on_success, [reason, prefix, data, options])
+        destination.on_success(reason, prefix, data, options)
         state
 
       {:error, reason} ->
-        Kernel.apply(destination, :on_error, [reason, prefix, data, options])
+        destination.on_error(reason, prefix, data, options)
         state
 
       {:ok, reason, updated_options} ->
-        Kernel.apply(destination, :on_success, [reason, prefix, data, options])
+        destination.on_success(reason, prefix, data, options)
         %{state | options: updated_options}
 
       {:error, reason, updated_options} ->
-        Kernel.apply(destination, :on_error, [reason, prefix, data, options])
+        destination.on_error(reason, prefix, data, options)
         %{state | options: updated_options}
     end
   end
