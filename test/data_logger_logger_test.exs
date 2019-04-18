@@ -1,7 +1,7 @@
 defmodule DataLogger.LoggerTest do
   use ExUnit.Case
 
-  alias DataLogger.MemoryDestination
+  alias DataLogger.Testing.MemoryDestination
   alias DataLogger.Logger, as: LoggerWorker
 
   import Mock
@@ -31,7 +31,7 @@ defmodule DataLogger.LoggerTest do
   end
 
   setup do
-    {:ok, destination_pid} = MemoryDestination.start_link()
+    {:ok, destination_pid} = start_supervised(MemoryDestination)
 
     {:ok, green_worker_pid} =
       LoggerWorker.start_link(

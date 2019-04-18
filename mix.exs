@@ -1,13 +1,12 @@
 defmodule DataLogger.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.2.0"
 
   def project do
     [
       app: :data_logger,
       version: @version,
-      elixir: "~> 1.7",
       deps: deps(),
       description:
         "A toolkit for data mapping and language integrated query for ElixirA logger that can be used to log any kind of data to remote or local destinations",

@@ -1,17 +1,17 @@
 defmodule DataLogger.Logger do
   @moduledoc """
-  A worker process, created and supervised per destination and per `prefix`, also known as sub-destination.
+  A worker process, created and supervised per destination and per `prefix`, also known as a sub-destination.
 
   The first time `DataLogger.log/2` is called with a given `prefix` `DataLogger.Logger` for this `prefix` for
   every configured destination are created. They are supervised by a new supervisor, created for the given `prefix`.
 
-  A `DataLogger.Logger` process is registered in a pub-sub registry with its `prefix`, so when data is send for this prefix,
+  A `DataLogger.Logger` process is registered in a pub-sub registry with its `prefix`, so when data is sent for this prefix,
   every such process is notified and data is *casted* to it in the form of `{:log_data, prefix, data}`.
 
   If the `destination` of a `DataLogger.Logger` is configured to be `send_async: true`, the process
-  will be creating a task per *cast* and will be responsible to to invoke the `on_error/4`/`on_success/4` of the
+  will be creating a task per *cast* and will be responsible to invoke the `on_error/4`/`on_success/4` of the
   `destination` when the task finishes.
-  It will also react when the task is down.
+  It will also react when the task is `:DOWN`.
   """
 
   use GenServer
