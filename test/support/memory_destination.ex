@@ -36,7 +36,7 @@ defmodule DataLogger.MemoryDestination do
     :ok = Application.stop(:data_logger)
 
     try do
-      async_destination = {__MODULE__, [destination: 3, send_async: true]}
+      async_destination = {__MODULE__, %{destination: 3, send_async: true}}
       Application.put_env(:data_logger, :destinations, [async_destination | destinations])
 
       {:ok, [:data_logger]} = Application.ensure_all_started(:data_logger)

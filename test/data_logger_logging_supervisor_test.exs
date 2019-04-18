@@ -34,8 +34,8 @@ defmodule DataLogger.LoggingSupervisorTest do
            |> Enum.member?(logger_sup_pid)
 
     [
-      {{:orange, MemoryDestination, [destination: _]}, pid1, :worker, [LoggerWorker]},
-      {{:orange, MemoryDestination, [destination: _]}, pid2, :worker, [LoggerWorker]}
+      {{:orange, MemoryDestination, %{destination: _}}, pid1, :worker, [LoggerWorker]},
+      {{:orange, MemoryDestination, %{destination: _}}, pid2, :worker, [LoggerWorker]}
     ] = Supervisor.which_children(logger_sup_pid)
 
     assert Process.alive?(pid1)

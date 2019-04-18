@@ -24,39 +24,27 @@ defmodule DataLogger.Logger do
   end
 
   @impl true
-  def init(%{prefix: prefix, options: options} = state) do
+  def init(%{prefix: prefix, options: options, module: destination} = state) do
     Registry.register(DataLogger.PubSub, prefix, nil)
 
-    options
-    |> Keyword.get(:send_async, false)
+    initialized_state = %{state | options: destination.initialize(options)}
+
+    initialized_state.options
+    |> Map.get(:send_async, false)
     |> if(
-      do: {:ok, Map.put_new(state, :tasks, %{})},
-      else: {:ok, state}
+      do: {:ok, Map.put_new(initialized_state, :tasks, %{})},
+      else: {:ok, initialized_state}
     )
   end
 
   @impl true
   def handle_cast({:log_data, prefix, data}, %{prefix: prefix, options: options} = state) do
-    new_state =
-      options
-      |> Keyword.get(:send_async, false)
-      |> log_data(prefix, data, state)
-
-    {:noreply, new_state}
+    {:noreply, log_data(options, prefix, data, state)}
   end
 
   @impl true
-  def handle_info(
-        {_ref, {data, result}},
-        %{module: destination, options: options, prefix: prefix} = state
-      ) do
-    case result do
-      :ok -> Kernel.apply(destination, :on_success, [:ok, prefix, data, options])
-      {:ok, reason} -> Kernel.apply(destination, :on_success, [reason, prefix, data, options])
-      {:error, reason} -> Kernel.apply(destination, :on_error, [reason, prefix, data, options])
-    end
-
-    {:noreply, state}
+  def handle_info({_ref, {data, result}}, %{prefix: prefix} = state) do
+    {:noreply, handle_send_data_result(result, prefix, data, state)}
   end
 
   @impl true
@@ -69,20 +57,8 @@ defmodule DataLogger.Logger do
     {:noreply, %{state | tasks: updated_tasks}}
   end
 
-  defp log_data(false, prefix, data, %{module: destination, options: options} = state) do
-    destination
-    |> Kernel.apply(:send_data, [prefix, data, options])
-    |> case do
-      :ok -> Kernel.apply(destination, :on_success, [:ok, prefix, data, options])
-      {:ok, reason} -> Kernel.apply(destination, :on_success, [reason, prefix, data, options])
-      {:error, reason} -> Kernel.apply(destination, :on_error, [reason, prefix, data, options])
-    end
-
-    state
-  end
-
   defp log_data(
-         true,
+         %{send_async: true},
          prefix,
          data,
          %{module: destination, options: options, tasks: tasks} = state
@@ -102,7 +78,47 @@ defmodule DataLogger.Logger do
     %{state | tasks: Map.put_new(tasks, ref, pid)}
   end
 
+  defp log_data(
+         _,
+         prefix,
+         data,
+         %{module: destination, options: options} = state
+       ) do
+    destination
+    |> Kernel.apply(:send_data, [prefix, data, options])
+    |> handle_send_data_result(prefix, data, state)
+  end
+
   defp update_tasks(pid, tasks, ref, pid) when is_pid(pid) do
     Map.delete(tasks, ref)
+  end
+
+  defp handle_send_data_result(
+         result,
+         prefix,
+         data,
+         %{module: destination, options: options} = state
+       ) do
+    case result do
+      :ok ->
+        Kernel.apply(destination, :on_success, [:ok, prefix, data, options])
+        state
+
+      {:ok, reason} ->
+        Kernel.apply(destination, :on_success, [reason, prefix, data, options])
+        state
+
+      {:error, reason} ->
+        Kernel.apply(destination, :on_error, [reason, prefix, data, options])
+        state
+
+      {:ok, reason, updated_options} ->
+        Kernel.apply(destination, :on_success, [reason, prefix, data, options])
+        %{state | options: updated_options}
+
+      {:error, reason, updated_options} ->
+        Kernel.apply(destination, :on_error, [reason, prefix, data, options])
+        %{state | options: updated_options}
+    end
   end
 end

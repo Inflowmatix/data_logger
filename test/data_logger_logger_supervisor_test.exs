@@ -26,8 +26,8 @@ defmodule DataLogger.LoggerSupervisorTest do
            }
 
     [
-      {{:green, MemoryDestination, [destination: _]}, pid1, :worker, [LoggerWorker]},
-      {{:green, MemoryDestination, [destination: _]}, pid2, :worker, [LoggerWorker]}
+      {{:green, MemoryDestination, %{destination: _}}, pid1, :worker, [LoggerWorker]},
+      {{:green, MemoryDestination, %{destination: _}}, pid2, :worker, [LoggerWorker]}
     ] = Supervisor.which_children(supervisor_pid)
 
     assert Process.alive?(pid1)
