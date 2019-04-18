@@ -1,6 +1,6 @@
 defmodule DataLogger.Destination do
   @moduledoc """
-  A behaviour, representing a destination.
+  A behaviour, representing a destination for data logging.
 
   The mandatory callback to implement is `DataLogger.Destination.send_data/3`.
   An implementation should handle errors and retries by using the optional callbacks
@@ -10,7 +10,7 @@ defmodule DataLogger.Destination do
   gets the configured options from the config and can return modified options.
   By default it returns what is passed to it.
 
-  A possible implementation should look like this:
+  A possible implementation could look like this:
 
       defmodule RelationalDBDestination do
         use DataLogger.Destination

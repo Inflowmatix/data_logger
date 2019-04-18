@@ -1,8 +1,17 @@
-defmodule DataLogger.MemoryDestination do
+defmodule DataLogger.Testing.MemoryDestination do
   use DataLogger.Destination
+
+  alias __MODULE__
 
   def start_link(state \\ []) do
     Agent.start_link(fn -> state end)
+  end
+
+  def child_spec(arg) do
+    %{
+      id: MemoryDestination,
+      start: {MemoryDestination, :start_link, [arg]}
+    }
   end
 
   @impl true

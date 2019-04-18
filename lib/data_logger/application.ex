@@ -12,14 +12,27 @@ defmodule DataLogger.Application do
 
   alias DataLogger.LoggingSupervisor
 
-  def start(_type, _args) do
+  @default_destinations []
+  @default_config [
+    destinations: @default_destinations
+  ]
+
+  def start(_type, config \\ @default_config) do
+    cfg = Keyword.merge(Application.get_all_env(:data_logger), config)
+
+    destinations =
+      cfg
+      |> Keyword.get(:destinations, @default_destinations)
+
     additional_children =
-      :data_logger
-      |> Application.get_env(:destinations, [])
+      destinations
       |> Enum.any?(fn {_, options} -> options[:send_async] end)
       |> if(
-        do: [{Task.Supervisor, name: DataLogger.TaskSupervisor}, LoggingSupervisor],
-        else: [LoggingSupervisor]
+        do: [
+          {Task.Supervisor, name: DataLogger.TaskSupervisor},
+          {LoggingSupervisor, [cfg]}
+        ],
+        else: [{LoggingSupervisor, [cfg]}]
       )
 
     children =

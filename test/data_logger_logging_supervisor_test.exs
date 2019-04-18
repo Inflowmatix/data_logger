@@ -2,7 +2,7 @@ defmodule DataLogger.LoggingSupervisorTest do
   use ExUnit.Case
 
   alias DataLogger.LoggingSupervisor
-  alias DataLogger.MemoryDestination
+  alias DataLogger.Testing.MemoryDestination
   alias DataLogger.LoggerSupervisor
   alias DataLogger.Logger, as: LoggerWorker
 
@@ -35,7 +35,7 @@ defmodule DataLogger.LoggingSupervisorTest do
 
     [
       {{:orange, MemoryDestination, %{destination: _}}, pid1, :worker, [LoggerWorker]},
-      {{:orange, MemoryDestination, %{destination: _}}, pid2, :worker, [LoggerWorker]}
+      {{:orange, MemoryDestination, %{destination: _}}, pid2, :worker, [LoggerWorker]} | _
     ] = Supervisor.which_children(logger_sup_pid)
 
     assert Process.alive?(pid1)

@@ -7,7 +7,7 @@ defmodule DataLogger do
       config :data_logger,
         destinations: [
           {DestinationImplementation, [option_one: value_one, option_two: value_two]},
-          {AnoterDestinationImplementation, [option: value]}
+          {AnotherDestinationImplementation, [option: value]}
         ]
 
   When such a configuration is defined, chunks of data, represented by Elixir terms
@@ -23,7 +23,7 @@ defmodule DataLogger do
 
       DataLogger.log(:red, [row1, row2, row3, row4])
 
-  This way we could have different schemas or tables or clients, etc and send
+  This way we could have different schemas or tables or clients, etc. and send
   data related to them to a storage defined for them.
   In the *red* and *green* example the configuration would be:
 
@@ -34,11 +34,11 @@ defmodule DataLogger do
 
   The destination should be a module, which implements the `DataLogger.Destination` protocol.
 
-  For both the *green* and the *red* data there will be independent supervisor tree with a worker
+  For both the *green* and the *red* data there will be independent supervision tree with a worker
   per destination so the data sent to the *green* destination won't be in the way of the data sent
   to the *red* destination.
 
-  By default the data logged by `DataLogger.log/2` is send in the worker process
+  By default the data logged by `DataLogger.log/2` is sent in the worker process
   for the given `prefix` (*green* or *red*) in the above example.
   This can be changed if in the options of the destination `:send_async` is set to `true`:
 
@@ -47,7 +47,7 @@ defmodule DataLogger do
           {RelationalDBDestination, [host: "localhost", user: "inflowmatix", password: "secret", send_async: true]}
         ]
 
-  Now every chunk of data logged with that `prefix` will be send in its own supervised process.
+  Now every chunk of data logged with that `prefix` will be sent in its own supervised process.
   The `DataLogger.Destination` behaviour implementation can define `on_error/4` or/and `on_success/4`
   callbacks so the result can be handled.
 

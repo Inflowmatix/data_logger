@@ -1,10 +1,10 @@
 defmodule DataLoggerTest do
   use ExUnit.Case
 
-  alias DataLogger.MemoryDestination
+  alias DataLogger.Testing.MemoryDestination
 
   setup do
-    {:ok, pid} = MemoryDestination.start_link()
+    {:ok, pid} = start_supervised(MemoryDestination)
 
     %{memory_destination: pid}
   end
