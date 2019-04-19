@@ -1,9 +1,9 @@
-defmodule DataLogger.LoggerSupervisorTest do
+defmodule DataLogger.Destination.SupervisorTest do
   use ExUnit.Case
 
   alias DataLogger.Testing.MemoryDestination
-  alias DataLogger.LoggerSupervisor
-  alias DataLogger.Logger, as: LoggerWorker
+  alias DataLogger.Destination.Supervisor, as: DestinationsSupervisor
+  alias DataLogger.Destination.Controller
 
   setup do
     config = [
@@ -11,7 +11,7 @@ defmodule DataLogger.LoggerSupervisorTest do
     ]
 
     {:ok, supervisor_pid} =
-      LoggerSupervisor.start_link(config,
+      DestinationsSupervisor.start_link(config,
         topic: :green,
         name: :green_test_supervisor
       )
@@ -30,8 +30,8 @@ defmodule DataLogger.LoggerSupervisorTest do
            }
 
     [
-      {{:green, MemoryDestination, %{destination: _}}, pid1, :worker, [LoggerWorker]},
-      {{:green, MemoryDestination, %{destination: _}}, pid2, :worker, [LoggerWorker]}
+      {{:green, MemoryDestination, %{destination: _}}, pid1, :worker, [Controller]},
+      {{:green, MemoryDestination, %{destination: _}}, pid2, :worker, [Controller]}
     ] = Supervisor.which_children(supervisor_pid)
 
     assert Process.alive?(pid1)
@@ -40,7 +40,7 @@ defmodule DataLogger.LoggerSupervisorTest do
 
   test "supervises only the processes with the right topic, if prefix is used" do
     {:ok, supervisor_pid} =
-      LoggerSupervisor.start_link(
+      DestinationsSupervisor.start_link(
         [
           destinations: [
             {MemoryDestination, %{destination: 1}},
@@ -60,7 +60,7 @@ defmodule DataLogger.LoggerSupervisorTest do
 
     [
       {{:purple_car, MemoryDestination, %{destination: _, prefix: :purple}}, pid, :worker,
-       [LoggerWorker]}
+       [Controller]}
     ] = Supervisor.which_children(supervisor_pid)
 
     assert Process.alive?(pid)

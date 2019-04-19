@@ -1,15 +1,15 @@
-defmodule DataLogger.Logger do
+defmodule DataLogger.Destination.Controller do
   @moduledoc """
-  A worker process, created and supervised per destination and per `topic`, also known as a sub-destination.
+  A worker process, created and supervised per destination and per `topic`/sub-destination.
 
-  The first time `DataLogger.log/2` is called with a given `topic` `DataLogger.Logger` for this `topic` for
+  The first time `DataLogger.log/2` is called with a given `topic` `DataLogger.Destination.Controller`s for this `topic` for
   every configured destination are created. They are supervised by a new supervisor, created for the given `topic`.
 
-  A `DataLogger.Logger` process is registered in a pub-sub registry with its `topic`, so when data is sent for this topic,
+  A `DataLogger.Destination.Controller` process is registered in a pub-sub registry with its `topic`, so when data is sent to the topic,
   every such process is notified and data is *casted* to it in the form of `{:log_data, topic, data}`.
 
-  If the `destination` of a `DataLogger.Logger` is configured to be `send_async: true`, the process
-  will be creating a task per *cast* and will be responsible to invoke the `on_error/4`/`on_success/4` of the
+  If the `destination` of a `DataLogger.Destination.Controller` is configured with `send_async: true`, the process
+  will be creating a task per *cast* and will be responsible for invoking the `on_error/4`/`on_success/4` callbacks of the
   `destination` when the task finishes.
   It will also react when the task is `:DOWN`.
   """

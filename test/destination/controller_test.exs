@@ -1,8 +1,8 @@
-defmodule DataLogger.LoggerTest do
+defmodule DataLogger.Destination.ControllerTest do
   use ExUnit.Case
 
   alias DataLogger.Testing.MemoryDestination
-  alias DataLogger.Logger, as: LoggerWorker
+  alias DataLogger.Destination.Controller
 
   import Mock
   import ExUnit.CaptureLog
@@ -34,7 +34,7 @@ defmodule DataLogger.LoggerTest do
     {:ok, destination_pid} = start_supervised(MemoryDestination)
 
     {:ok, green_worker_pid} =
-      LoggerWorker.start_link(
+      Controller.start_link(
         topic: :green,
         name: :green_test_worker,
         destination: %{module: MemoryDestination, options: %{}}
@@ -90,7 +90,7 @@ defmodule DataLogger.LoggerTest do
       end
     ) do
       {:ok, worker_pid} =
-        LoggerWorker.start_link(
+        Controller.start_link(
           topic: :blue,
           name: :blue_test_worker,
           destination: %{module: BlueTestDestination, options: %{}}
@@ -135,7 +135,7 @@ defmodule DataLogger.LoggerTest do
       end
     ) do
       {:ok, worker_pid} =
-        LoggerWorker.start_link(
+        Controller.start_link(
           topic: :red,
           name: :red_test_worker,
           destination: %{module: RedTestDestination, options: %{send_async: true}}

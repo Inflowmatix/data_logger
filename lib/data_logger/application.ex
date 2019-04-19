@@ -10,8 +10,6 @@ defmodule DataLogger.Application do
 
   use Application
 
-  alias DataLogger.LoggingSupervisor
-
   @default_destinations []
   @default_config [
     destinations: @default_destinations
@@ -30,9 +28,9 @@ defmodule DataLogger.Application do
       |> if(
         do: [
           {Task.Supervisor, name: DataLogger.TaskSupervisor},
-          {LoggingSupervisor, [cfg]}
+          {DataLogger.Supervisor, [cfg]}
         ],
-        else: [{LoggingSupervisor, [cfg]}]
+        else: [{DataLogger.Supervisor, [cfg]}]
       )
 
     children =
@@ -42,7 +40,7 @@ defmodule DataLogger.Application do
          keys: :duplicate, name: DataLogger.PubSub, partitions: System.schedulers_online()}
       ] ++ additional_children
 
-    opts = [strategy: :one_for_all, name: DataLogger.Supervisor]
+    opts = [strategy: :one_for_all, name: DataLogger.Application.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end

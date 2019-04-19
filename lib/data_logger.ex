@@ -56,6 +56,7 @@ defmodule DataLogger do
   """
 
   alias DataLogger.Destination
+  alias DataLogger.Destination.Supervisor, as: DestinationsSupervisor
 
   @doc """
   This function is the sole entry point of the `DataLogger` application.
@@ -81,15 +82,15 @@ defmodule DataLogger do
   defp log_data({:error, _} = error, _, _), do: error
 
   defp find_or_start_logger_for_topic(topic) do
-    {DataLogger.Registry, {DataLogger.LoggerSupervisor, topic}}
+    {DataLogger.Registry, {DestinationsSupervisor, topic}}
     |> Registry.whereis_name()
     |> start_or_get_logger_supervisor(topic)
   end
 
   defp start_or_get_logger_supervisor(:undefined, topic) do
-    name = {:via, Registry, {DataLogger.Registry, {DataLogger.LoggerSupervisor, topic}}}
+    name = {:via, Registry, {DataLogger.Registry, {DestinationsSupervisor, topic}}}
 
-    DataLogger.LoggingSupervisor.start_child(topic, name)
+    DataLogger.Supervisor.start_child(topic, name)
   end
 
   defp start_or_get_logger_supervisor(pid, _) when is_pid(pid), do: {:ok, pid}
