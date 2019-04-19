@@ -37,4 +37,32 @@ defmodule DataLogger.LoggerSupervisorTest do
     assert Process.alive?(pid1)
     assert Process.alive?(pid2)
   end
+
+  test "supervises only the processes with the right prefix, if prefix is used" do
+    {:ok, supervisor_pid} =
+      LoggerSupervisor.start_link(
+        [
+          destinations: [
+            {MemoryDestination, %{destination: 1}},
+            {MemoryDestination, %{destination: 2, prefix: :purple}}
+          ]
+        ],
+        prefix: :purple_car,
+        name: :purple_test_supervisor
+      )
+
+    assert Supervisor.count_children(supervisor_pid) == %{
+             active: 1,
+             specs: 1,
+             supervisors: 0,
+             workers: 1
+           }
+
+    [
+      {{:purple_car, MemoryDestination, %{destination: _, prefix: :purple}}, pid, :worker,
+       [LoggerWorker]}
+    ] = Supervisor.which_children(supervisor_pid)
+
+    assert Process.alive?(pid)
+  end
 end

@@ -23,7 +23,7 @@ The package can be installed by adding `data_logger` to your list of dependencie
 ```elixir
 def deps do
   [
-    {:data_logger, "~> 0.2.0"}
+    {:data_logger, "~> 0.3.0"}
   ]
 end
 ```
@@ -85,6 +85,18 @@ callbacks so the result can be handled.
 
 Ensuring that the data has been sent and retrying sending it, if needed is a responsibility of the destination
 implementation.
+
+### Prefixes
+
+From version `0.3.0` the DataLogger can have destinations with prefixes, like:
+
+    destinations: [
+      {MyDestination, %{prefix: "blue"}},
+      {MyOtherDestination, %{prefix: "purple"}}
+    ]
+
+Now data logged with `DataLogger.log("purple_1", <data>)` will be sent only the `MyOtherDestination`.
+Multiple destinations can have the same prefix.
 
 ## Documentation
 
