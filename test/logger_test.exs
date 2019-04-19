@@ -35,7 +35,7 @@ defmodule DataLogger.LoggerTest do
 
     {:ok, green_worker_pid} =
       LoggerWorker.start_link(
-        prefix: :green,
+        topic: :green,
         name: :green_test_worker,
         destination: %{module: MemoryDestination, options: %{}}
       )
@@ -60,7 +60,7 @@ defmodule DataLogger.LoggerTest do
     assert data.green == [test_event: %{}]
   end
 
-  test "sending with the wrong prefix doesn't work", %{
+  test "sending with the wrong topic doesn't work", %{
     destination_pid: destination_pid,
     green_worker: green_worker_pid
   } do
@@ -91,7 +91,7 @@ defmodule DataLogger.LoggerTest do
     ) do
       {:ok, worker_pid} =
         LoggerWorker.start_link(
-          prefix: :blue,
+          topic: :blue,
           name: :blue_test_worker,
           destination: %{module: BlueTestDestination, options: %{}}
         )
@@ -136,7 +136,7 @@ defmodule DataLogger.LoggerTest do
     ) do
       {:ok, worker_pid} =
         LoggerWorker.start_link(
-          prefix: :red,
+          topic: :red,
           name: :red_test_worker,
           destination: %{module: RedTestDestination, options: %{send_async: true}}
         )

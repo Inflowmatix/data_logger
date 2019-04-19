@@ -1,12 +1,12 @@
 defmodule DataLogger.Logger do
   @moduledoc """
-  A worker process, created and supervised per destination and per `prefix`, also known as a sub-destination.
+  A worker process, created and supervised per destination and per `topic`, also known as a sub-destination.
 
-  The first time `DataLogger.log/2` is called with a given `prefix` `DataLogger.Logger` for this `prefix` for
-  every configured destination are created. They are supervised by a new supervisor, created for the given `prefix`.
+  The first time `DataLogger.log/2` is called with a given `topic` `DataLogger.Logger` for this `topic` for
+  every configured destination are created. They are supervised by a new supervisor, created for the given `topic`.
 
-  A `DataLogger.Logger` process is registered in a pub-sub registry with its `prefix`, so when data is sent for this prefix,
-  every such process is notified and data is *casted* to it in the form of `{:log_data, prefix, data}`.
+  A `DataLogger.Logger` process is registered in a pub-sub registry with its `topic`, so when data is sent for this topic,
+  every such process is notified and data is *casted* to it in the form of `{:log_data, topic, data}`.
 
   If the `destination` of a `DataLogger.Logger` is configured to be `send_async: true`, the process
   will be creating a task per *cast* and will be responsible to invoke the `on_error/4`/`on_success/4` of the
@@ -19,13 +19,13 @@ defmodule DataLogger.Logger do
   alias __MODULE__, as: Mod
 
   @doc false
-  def start_link(prefix: prefix, name: name, destination: %{module: _, options: _} = destination) do
-    GenServer.start_link(Mod, Map.put_new(destination, :prefix, prefix), name: name)
+  def start_link(topic: topic, name: name, destination: %{module: _, options: _} = destination) do
+    GenServer.start_link(Mod, Map.put_new(destination, :topic, topic), name: name)
   end
 
   @impl true
-  def init(%{prefix: prefix, options: options, module: destination} = state) do
-    Registry.register(DataLogger.PubSub, prefix, nil)
+  def init(%{topic: topic, options: options, module: destination} = state) do
+    Registry.register(DataLogger.PubSub, topic, nil)
 
     initialized_state = %{state | options: destination.initialize(options)}
 
@@ -38,13 +38,13 @@ defmodule DataLogger.Logger do
   end
 
   @impl true
-  def handle_cast({:log_data, prefix, data}, %{prefix: prefix, options: options} = state) do
-    {:noreply, log_data(options, prefix, data, state)}
+  def handle_cast({:log_data, topic, data}, %{topic: topic, options: options} = state) do
+    {:noreply, log_data(options, topic, data, state)}
   end
 
   @impl true
-  def handle_info({_ref, {data, result}}, %{prefix: prefix} = state) do
-    {:noreply, handle_send_data_result(result, prefix, data, state)}
+  def handle_info({_ref, {data, result}}, %{topic: topic} = state) do
+    {:noreply, handle_send_data_result(result, topic, data, state)}
   end
 
   @impl true
@@ -59,13 +59,13 @@ defmodule DataLogger.Logger do
 
   defp log_data(
          %{send_async: true},
-         prefix,
+         topic,
          data,
          %{module: destination, options: options, tasks: tasks} = state
        ) do
     action = fn ->
       try do
-        result = destination.send_data(prefix, data, options)
+        result = destination.send_data(topic, data, options)
 
         {data, result}
       rescue
@@ -80,12 +80,12 @@ defmodule DataLogger.Logger do
 
   defp log_data(
          _,
-         prefix,
+         topic,
          data,
          %{module: destination, options: options} = state
        ) do
-    destination.send_data(prefix, data, options)
-    |> handle_send_data_result(prefix, data, state)
+    destination.send_data(topic, data, options)
+    |> handle_send_data_result(topic, data, state)
   end
 
   defp update_tasks(pid, tasks, ref, pid) when is_pid(pid) do
@@ -94,29 +94,29 @@ defmodule DataLogger.Logger do
 
   defp handle_send_data_result(
          result,
-         prefix,
+         topic,
          data,
          %{module: destination, options: options} = state
        ) do
     case result do
       :ok ->
-        destination.on_success(:ok, prefix, data, options)
+        destination.on_success(:ok, topic, data, options)
         state
 
       {:ok, reason} ->
-        destination.on_success(reason, prefix, data, options)
+        destination.on_success(reason, topic, data, options)
         state
 
       {:error, reason} ->
-        destination.on_error(reason, prefix, data, options)
+        destination.on_error(reason, topic, data, options)
         state
 
       {:ok, reason, updated_options} ->
-        destination.on_success(reason, prefix, data, options)
+        destination.on_success(reason, topic, data, options)
         %{state | options: updated_options}
 
       {:error, reason, updated_options} ->
-        destination.on_error(reason, prefix, data, options)
+        destination.on_error(reason, topic, data, options)
         %{state | options: updated_options}
     end
   end

@@ -12,7 +12,7 @@ defmodule DataLogger.LoggerSupervisorTest do
 
     {:ok, supervisor_pid} =
       LoggerSupervisor.start_link(config,
-        prefix: :green,
+        topic: :green,
         name: :green_test_supervisor
       )
 
@@ -38,7 +38,7 @@ defmodule DataLogger.LoggerSupervisorTest do
     assert Process.alive?(pid2)
   end
 
-  test "supervises only the processes with the right prefix, if prefix is used" do
+  test "supervises only the processes with the right topic, if prefix is used" do
     {:ok, supervisor_pid} =
       LoggerSupervisor.start_link(
         [
@@ -47,7 +47,7 @@ defmodule DataLogger.LoggerSupervisorTest do
             {MemoryDestination, %{destination: 2, prefix: :purple}}
           ]
         ],
-        prefix: :purple_car,
+        topic: :purple_car,
         name: :purple_test_supervisor
       )
 
