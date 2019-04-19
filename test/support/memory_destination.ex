@@ -15,9 +15,9 @@ defmodule DataLogger.Testing.MemoryDestination do
   end
 
   @impl true
-  def send_data(prefix, {pid, data}, options) when is_pid(pid) do
+  def send_data(topic, {pid, data}, options) when is_pid(pid) do
     Agent.update(pid, fn current ->
-      [%{prefix: prefix, data: data, options: options} | current]
+      [%{topic: topic, data: data, options: options} | current]
     end)
   end
 
@@ -35,8 +35,8 @@ defmodule DataLogger.Testing.MemoryDestination do
   def get_data_per_topic(pid, min_expected_data_size \\ 0) do
     pid
     |> get_current_state(min_expected_data_size)
-    |> Enum.reduce(%{}, fn %{prefix: prefix, data: data, options: options}, acc ->
-      Map.update(acc, prefix, [{data, options}], &[{data, options} | &1])
+    |> Enum.reduce(%{}, fn %{topic: topic, data: data, options: options}, acc ->
+      Map.update(acc, topic, [{data, options}], &[{data, options} | &1])
     end)
   end
 

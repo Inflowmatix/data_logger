@@ -1,16 +1,15 @@
-defmodule DataLogger.LoggingSupervisorTest do
+defmodule DataLogger.SupervisorTest do
   use ExUnit.Case
 
-  alias DataLogger.LoggingSupervisor
   alias DataLogger.Testing.MemoryDestination
-  alias DataLogger.LoggerSupervisor
-  alias DataLogger.Logger, as: LoggerWorker
+  alias DataLogger.Destination.Supervisor, as: DestinationsSupervisor
+  alias DataLogger.Destination.Controller
 
   setup do
-    %{supervisor: Process.whereis(LoggingSupervisor)}
+    %{supervisor: Process.whereis(DataLogger.Supervisor)}
   end
 
-  test "can start a DataLogger.LoggerSupervisor sub-tree for given prefix", %{
+  test "can start a DataLogger.Destination.Supervisor sub-tree for given prefix", %{
     supervisor: supervisor_pid
   } do
     %{
@@ -20,7 +19,7 @@ defmodule DataLogger.LoggingSupervisorTest do
       workers: 0
     } = Supervisor.count_children(supervisor_pid)
 
-    {:ok, logger_sup_pid} = LoggingSupervisor.start_child(:orange, :test_sup)
+    {:ok, logger_sup_pid} = DataLogger.Supervisor.start_child(:orange, :test_sup)
 
     assert %{
              active: number_of_children + 1,
@@ -30,12 +29,12 @@ defmodule DataLogger.LoggingSupervisorTest do
            } == Supervisor.count_children(supervisor_pid)
 
     assert Supervisor.which_children(supervisor_pid)
-           |> Enum.map(fn {_, pid, :supervisor, [LoggerSupervisor]} -> pid end)
+           |> Enum.map(fn {_, pid, :supervisor, [DestinationsSupervisor]} -> pid end)
            |> Enum.member?(logger_sup_pid)
 
     [
-      {{:orange, MemoryDestination, %{destination: _}}, pid1, :worker, [LoggerWorker]},
-      {{:orange, MemoryDestination, %{destination: _}}, pid2, :worker, [LoggerWorker]} | _
+      {{:orange, MemoryDestination, %{destination: _}}, pid1, :worker, [Controller]},
+      {{:orange, MemoryDestination, %{destination: _}}, pid2, :worker, [Controller]} | _
     ] = Supervisor.which_children(logger_sup_pid)
 
     assert Process.alive?(pid1)

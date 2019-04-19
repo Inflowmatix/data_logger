@@ -23,7 +23,7 @@ The package can be installed by adding `data_logger` to your list of dependencie
 ```elixir
 def deps do
   [
-    {:data_logger, "~> 0.2.0"}
+    {:data_logger, "~> 0.3.0"}
   ]
 end
 ```
@@ -71,7 +71,7 @@ per destination so the data sent to the *green* destination won't be in the way 
 to the *red* destination.
 
 By default the data logged by `DataLogger.log/2` is send in the worker process
-for the given `prefix` (*green* or *red*) in the above example.
+for the given `topic` (*green* or *red*) in the above example.
 This can be changed if in the options of the destination `:send_async` is set to `true`:
 
     config :data_logger,
@@ -79,12 +79,24 @@ This can be changed if in the options of the destination `:send_async` is set to
         {RelationalDBDestination, %{host: "localhost", user: "inflowmatix", password: "secret", send_async: true}}
       ]
 
-Now every chunk of data logged with that `prefix` will be send in its own supervised process.
+Now every chunk of data logged with that `topic` will be send in its own supervised process.
 The `DataLogger.Destination` behaviour implementation can define `on_error/4` or/and `on_success/4`
 callbacks so the result can be handled.
 
 Ensuring that the data has been sent and retrying sending it, if needed is a responsibility of the destination
 implementation.
+
+### Prefixes
+
+From version `0.3.0` the DataLogger can have destinations with prefixes, like:
+
+    destinations: [
+      {MyDestination, %{prefix: "blue"}},
+      {MyOtherDestination, %{prefix: "purple"}}
+    ]
+
+Now data logged with `DataLogger.log("purple_1", <data>)` will be sent only the `MyOtherDestination`.
+Multiple destinations can have the same prefix.
 
 ## Documentation
 

@@ -39,7 +39,7 @@ defmodule DataLogger do
   to the *red* destination.
 
   By default the data logged by `DataLogger.log/2` is sent in the worker process
-  for the given `prefix` (*green* or *red*) in the above example.
+  for the given `topic` (*green* or *red*) in the above example.
   This can be changed if in the options of the destination `:send_async` is set to `true`:
 
       config :data_logger,
@@ -47,7 +47,7 @@ defmodule DataLogger do
           {RelationalDBDestination, %{host: "localhost", user: "inflowmatix", password: "secret", send_async: true}}
         ]
 
-  Now every chunk of data logged with that `prefix` will be sent in its own supervised process.
+  Now every chunk of data logged to that `topic` will be sent in its own supervised process.
   The `DataLogger.Destination` behaviour implementation can define `on_error/4` or/and `on_success/4`
   callbacks so the result can be handled.
 
@@ -56,40 +56,41 @@ defmodule DataLogger do
   """
 
   alias DataLogger.Destination
+  alias DataLogger.Destination.Supervisor, as: DestinationsSupervisor
 
   @doc """
   This function is the sole entry point of the `DataLogger` application.
   It is used to log/send the `data` passed to it to the configured destinations.
 
-  The `prefix` given can be used to send the data to different sub-destinations of every destination configured.
+  The `topic` given can be used to send the data to different sub-destinations of every destination configured.
   """
-  @spec log(Destination.prefix(), data :: term()) :: :ok | {:error, reason :: term()}
-  def log(prefix, data) do
-    prefix
-    |> find_or_start_logger_for_preffix()
-    |> log_data(prefix, data)
+  @spec log(Destination.topic(), data :: term()) :: :ok | {:error, reason :: term()}
+  def log(topic, data) do
+    topic
+    |> find_or_start_logger_for_topic()
+    |> log_data(topic, data)
   end
 
-  defp log_data({:ok, sub_pid}, prefix, data) when is_pid(sub_pid) do
-    Registry.dispatch(DataLogger.PubSub, prefix, fn subscribers ->
+  defp log_data({:ok, sub_pid}, topic, data) when is_pid(sub_pid) do
+    Registry.dispatch(DataLogger.PubSub, topic, fn subscribers ->
       for {pid, _} <- subscribers do
-        GenServer.cast(pid, {:log_data, prefix, data})
+        GenServer.cast(pid, {:log_data, topic, data})
       end
     end)
   end
 
   defp log_data({:error, _} = error, _, _), do: error
 
-  defp find_or_start_logger_for_preffix(prefix) do
-    {DataLogger.Registry, {DataLogger.LoggerSupervisor, prefix}}
+  defp find_or_start_logger_for_topic(topic) do
+    {DataLogger.Registry, {DestinationsSupervisor, topic}}
     |> Registry.whereis_name()
-    |> start_or_get_logger_supervisor(prefix)
+    |> start_or_get_logger_supervisor(topic)
   end
 
-  defp start_or_get_logger_supervisor(:undefined, prefix) do
-    name = {:via, Registry, {DataLogger.Registry, {DataLogger.LoggerSupervisor, prefix}}}
+  defp start_or_get_logger_supervisor(:undefined, topic) do
+    name = {:via, Registry, {DataLogger.Registry, {DestinationsSupervisor, topic}}}
 
-    DataLogger.LoggingSupervisor.start_child(prefix, name)
+    DataLogger.Supervisor.start_child(topic, name)
   end
 
   defp start_or_get_logger_supervisor(pid, _) when is_pid(pid), do: {:ok, pid}
