@@ -1,7 +1,7 @@
 defmodule DataLogger.Supervisor do
   @moduledoc """
   A `DynamicSupervisor` which adds a new `DataLogger.Destination.Supervisor` and its sub-tree of workers to its
-  children, whever a new `topic`, for which data haven't been logged until now is passed to `DataLogger.log/2`.
+  children, whenever a new `topic`, for which data haven't been logged until now is passed to `DataLogger.log/2`.
 
   Using this, the `DataLogger` application is building its supervision tree lazy and on demand.
   """
