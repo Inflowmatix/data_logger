@@ -16,10 +16,10 @@ defmodule DataLogger.Destination do
         use DataLogger.Destination
 
         @impl true
-        def send_data(prefix, data, options) do
+        def send_data(topic, data, options) do
           connection = ConnectionToDBImpl.connect(options)
 
-          query_to_insert_data = transform_data_to_query(prefix, data)
+          query_to_insert_data = transform_data_to_query(topic, data)
 
           case ConnectionToDBImpl.execute(connection, query_to_insert_data, data) do
             :ok -> :ok
@@ -39,6 +39,7 @@ defmodule DataLogger.Destination do
         ]
   """
 
+  @type topic :: atom() | String.t()
   @type prefix :: atom() | String.t()
   @type options :: map()
   @type send_result ::
@@ -48,12 +49,12 @@ defmodule DataLogger.Destination do
           | {:ok, result :: term(), options()}
           | {:error, reason :: term(), options()}
 
-  @callback send_data(prefix(), data :: term(), options()) :: send_result()
+  @callback send_data(topic(), data :: term(), options()) :: send_result()
 
   @callback initialize(options()) :: options()
 
-  @callback on_error(error :: term(), prefix(), data :: term(), options()) :: :ok
-  @callback on_success(result :: term(), prefix(), data :: term(), options()) :: :ok
+  @callback on_error(error :: term(), topic(), data :: term(), options()) :: :ok
+  @callback on_success(result :: term(), topic(), data :: term(), options()) :: :ok
 
   @optional_callbacks initialize: 1,
                       on_error: 4,
