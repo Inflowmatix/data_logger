@@ -48,8 +48,7 @@ defmodule DataLogger.Destination.Supervisor do
       if Enum.any?(all_destinations, fn {_, options} -> Map.has_key?(options, :prefix) end) do
         all_destinations
         |> Enum.filter(fn {_, options} ->
-          options[:prefix] &&
-            String.starts_with?(to_string(topic), to_string(options[:prefix]))
+          options[:prefix] && String.starts_with?(to_string(topic), to_string(options[:prefix]))
         end)
       else
         all_destinations
