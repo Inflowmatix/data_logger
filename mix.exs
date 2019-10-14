@@ -8,10 +8,11 @@ defmodule DataLogger.MixProject do
       app: :data_logger,
       version: @version,
       deps: deps(),
+      source_url: "https://github.com/Inflowmatix/data_logger",
       description:
-        "A toolkit for data mapping and language integrated query for ElixirA logger that can be used to log any kind of data to remote or local destinations",
+        "A logger that can be used to log any kind of data to remote or local destinations.",
       package: package(),
-      name: "DataLogger",
+      docs: docs(),
       start_permanent: Mix.env() == :prod,
       dialyzer: [plt_add_apps: []],
       elixirc_paths: elixirc_paths(Mix.env())
@@ -28,16 +29,27 @@ defmodule DataLogger.MixProject do
   defp deps do
     [
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev, :test], runtime: false},
-      {:mock, "~> 0.3.0", only: :test}
+      {:mock, "~> 0.3.0", only: :test},
+      {:ex_doc, "~> 0.14", only: :dev, runtime: false}
     ]
   end
 
   defp package do
     [
+      name: "data_logger",
       maintainers: ["Inflowmatix"],
-      licenses: ["TODO"],
-      links: %{"GitHub" => "TODO"},
-      files: ~w(.formatter.exs mix.exs README.md)
+      licenses: ["MIT License"],
+      links: %{"GitHub" => "https://github.com/Inflowmatix/data_logger"},
+      files: ~w(.formatter.exs mix.exs README* config lib)
+    ]
+  end
+
+  defp docs do
+    [
+      extras: ["README.md"],
+      main: "readme",
+      source_ref: "v#{@version}",
+      source_url: "https://github.com/Inflowmatix/data_logger"
     ]
   end
 
