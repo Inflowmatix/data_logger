@@ -18,6 +18,8 @@ defmodule DataLogger.Destination.Controller do
 
   alias __MODULE__, as: Mod
 
+  require Logger
+
   @doc false
   def start_link(topic: topic, name: name, destination: %{module: _, options: _} = destination) do
     GenServer.start_link(Mod, Map.put_new(destination, :topic, topic), name: name)
@@ -55,6 +57,16 @@ defmodule DataLogger.Destination.Controller do
       |> update_tasks(tasks, monitored_ref, task_pid)
 
     {:noreply, %{state | tasks: updated_tasks}}
+  end
+
+  @impl true
+  def handle_info(
+        {:ssl_closed, {:sslsocket, {:gen_tcp, _port, :tls_connection, :undefined}, _}},
+        state
+      ) do
+    Logger.warn("For destinations working with Hackney, this will handle a runaway message.")
+
+    {:noreply, state}
   end
 
   defp log_data(
