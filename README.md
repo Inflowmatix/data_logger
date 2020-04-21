@@ -23,7 +23,7 @@ The package can be installed by adding `data_logger` to your list of dependencie
 ```elixir
 def deps do
   [
-    {:data_logger, "~> 0.3.0"}
+    {:data_logger, "~> 0.3.2"}
   ]
 end
 ```
