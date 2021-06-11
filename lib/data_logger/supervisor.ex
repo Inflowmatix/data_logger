@@ -16,7 +16,12 @@ defmodule DataLogger.Supervisor do
   ]
 
   @doc false
-  def child_spec(config \\ @default_config), do: Supervisor.Spec.supervisor(Mod, config)
+  def child_spec(config \\ @default_config) do
+    %{
+      id: Mod,
+      start: {Mod, :start_link, config}
+    }
+  end
 
   @doc false
   def start_link(config \\ @default_config),
