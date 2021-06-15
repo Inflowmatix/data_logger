@@ -1,7 +1,7 @@
 defmodule DataLogger.MixProject do
   use Mix.Project
 
-  @version "0.3.2"
+  @version "0.4.0"
 
   def project do
     [
@@ -28,8 +28,8 @@ defmodule DataLogger.MixProject do
 
   defp deps do
     [
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev, :test], runtime: false},
-      {:mock, "~> 0.3.0", only: :test},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:mock, "~> 0.3", only: :test},
       {:ex_doc, "~> 0.14", only: :dev, runtime: false}
     ]
   end
