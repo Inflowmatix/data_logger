@@ -18,7 +18,7 @@ jobs:
       run: |
         mix local.hex --force
         mix local.rebar --force
-        mix hex.organization auth inflowmatix --key $HEX_KEY
+        mix hex.organization auth inflowmatix --key ${{ secrets.HEX_KEY }}
         mix deps.get
       working-directory: /home/runner/work/data_logger/data_logger
     - name: Test
