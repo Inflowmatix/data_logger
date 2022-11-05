@@ -163,4 +163,10 @@ defmodule DataLogger.Destination.ControllerTest do
       )
     end
   end
+
+  test "the destination controller times out if not used", %{green_worker: pid} do
+    Process.sleep(1000 + 100)
+
+    refute Process.alive?(pid)
+  end
 end
