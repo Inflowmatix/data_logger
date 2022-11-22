@@ -13,6 +13,7 @@ defmodule DataLogger.Destination.Controller do
   `destination` when the task finishes.
   It will also react when the task is `:DOWN`.
   """
+  @timeout 1000
 
   use GenServer
 
@@ -34,19 +35,19 @@ defmodule DataLogger.Destination.Controller do
     initialized_state.options
     |> Map.get(:send_async, false)
     |> if(
-      do: {:ok, Map.put_new(initialized_state, :tasks, %{})},
-      else: {:ok, initialized_state}
+      do: {:ok, Map.put_new(initialized_state, :tasks, %{}), @timeout},
+      else: {:ok, initialized_state, @timeout}
     )
   end
 
   @impl true
   def handle_cast({:log_data, topic, data}, %{topic: topic, options: options} = state) do
-    {:noreply, log_data(options, topic, data, state)}
+    {:noreply, log_data(options, topic, data, state), @timeout}
   end
 
   @impl true
   def handle_info({_ref, {data, result}}, %{topic: topic} = state) do
-    {:noreply, handle_send_data_result(result, topic, data, state)}
+    {:noreply, handle_send_data_result(result, topic, data, state), @timeout}
   end
 
   @impl true
@@ -56,7 +57,7 @@ defmodule DataLogger.Destination.Controller do
       |> Map.get(monitored_ref)
       |> update_tasks(tasks, monitored_ref, task_pid)
 
-    {:noreply, %{state | tasks: updated_tasks}}
+    {:noreply, %{state | tasks: updated_tasks}, @timeout}
   end
 
   @impl true
@@ -68,7 +69,7 @@ defmodule DataLogger.Destination.Controller do
       "For destinations working with Hackney, handled a runaway connection closed message."
     )
 
-    {:noreply, state}
+    {:noreply, state, @timeout}
   end
 
   @impl true
@@ -77,7 +78,14 @@ defmodule DataLogger.Destination.Controller do
       "For destinations working with Mojito, handled a runaway connection closed message."
     )
 
-    {:noreply, state}
+    {:noreply, state, @timeout}
+  end
+
+  @impl true
+  def handle_info(:timeout, state) do
+    Logger.debug("Shutting down Destination Controller with state: #{inspect(state)}")
+
+    {:stop, :normal, []}
   end
 
   defp log_data(
