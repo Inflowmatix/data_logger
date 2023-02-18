@@ -64,7 +64,7 @@ defmodule DataLogger.Destination.Supervisor do
           start:
             {Controller, :start_link,
              [[topic: topic, name: name, destination: %{module: mod, options: options}]]},
-          restart: :permanent,
+          restart: :transient,
           shutdown: 5000,
           type: :worker
         }
