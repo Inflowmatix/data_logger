@@ -39,7 +39,6 @@ defmodule DataLogger.Destination.SupervisorTest do
 
     Process.sleep(1500)
 
-
     refute Process.alive?(pid1)
     assert Process.alive?(pid2)
   end
