@@ -36,6 +36,11 @@ defmodule DataLogger.Destination.SupervisorTest do
 
     assert Process.alive?(pid1)
     assert Process.alive?(pid2)
+
+    Process.sleep(1500)
+
+    refute Process.alive?(pid1)
+    refute Process.alive?(pid2)
   end
 
   test "supervises only the processes with the right topic, if prefix is used" do
