@@ -65,7 +65,7 @@ defmodule DataLogger.Destination.Controller do
         {:ssl_closed, {:sslsocket, {:gen_tcp, _port, :tls_connection, :undefined}, _}},
         state
       ) do
-    Logger.warn(
+    Logger.warning(
       "For destinations working with Hackney, handled a runaway connection closed message."
     )
 
@@ -74,7 +74,7 @@ defmodule DataLogger.Destination.Controller do
 
   @impl true
   def handle_info({:mojito_response, _, {:error, :closed}}, state) do
-    Logger.warn(
+    Logger.warning(
       "For destinations working with Mojito, handled a runaway connection closed message."
     )
 
