@@ -117,7 +117,12 @@ defmodule DataLogger.Destination.ControllerTest do
   end
 
   test "the destination on_success/4 function is called on success and on_error/4 on error when send_async is true" do
-    {:ok, _} = Task.Supervisor.start_link(name: DataLogger.TaskSupervisor)
+    # The OTP app already starts DataLogger.TaskSupervisor when any configured
+    # destination uses send_async: true, so tolerate it being already started.
+    case Task.Supervisor.start_link(name: DataLogger.TaskSupervisor) do
+      {:ok, _} -> :ok
+      {:error, {:already_started, _}} -> :ok
+    end
 
     with_mock(RedTestDestination,
       on_success: fn

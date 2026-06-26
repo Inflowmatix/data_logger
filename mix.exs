@@ -1,12 +1,13 @@
 defmodule DataLogger.MixProject do
   use Mix.Project
 
-  @version "0.5.0"
+  @version "0.6.0"
 
   def project do
     [
       app: :data_logger,
       version: @version,
+      elixir: "~> 1.19",
       deps: deps(),
       source_url: "https://github.com/Inflowmatix/data_logger",
       description:
