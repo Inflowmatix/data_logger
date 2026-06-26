@@ -40,6 +40,21 @@ defmodule DataLogger.Destination.Supervisor do
     Supervisor.start_link(Mod, {topic, config}, name: name)
   end
 
+  @doc false
+  # Started on demand by `DataLogger.Supervisor` (a `DynamicSupervisor`) per topic.
+  # `restart: :transient` so that when this supervisor auto-shuts-down after its
+  # (significant) idle controllers stop `:normal`, the `DynamicSupervisor` does NOT
+  # restart it. Its registry entry is then released and the next `DataLogger.log/2`
+  # for the topic recreates the whole sub-tree (and re-subscribes the controllers).
+  def child_spec(opts) do
+    %{
+      id: {__MODULE__, Keyword.get(opts, :topic)},
+      start: {__MODULE__, :start_link, [opts]},
+      type: :supervisor,
+      restart: :transient
+    }
+  end
+
   @impl true
   def init({topic, config}) do
     all_destinations = Keyword.get(config, :destinations, @default_destinations)
@@ -65,11 +80,18 @@ defmodule DataLogger.Destination.Supervisor do
             {Controller, :start_link,
              [[topic: topic, name: name, destination: %{module: mod, options: options}]]},
           restart: :transient,
+          # Marked significant so that when every controller for this topic stops
+          # `:normal` (after its inactivity timeout), `auto_shutdown: :all_significant`
+          # tears this supervisor down too — clearing its registry entry so the next
+          # `DataLogger.log/2` recreates and re-subscribes the controllers. Without
+          # this, an idle `:transient` controller stays dead while the supervisor
+          # lingers, and `DataLogger.log/2` dispatches to zero subscribers (silent drop).
+          significant: true,
           shutdown: 5000,
           type: :worker
         }
       end)
 
-    Supervisor.init(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_one, auto_shutdown: :all_significant)
   end
 end
