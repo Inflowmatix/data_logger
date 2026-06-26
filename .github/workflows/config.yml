@@ -3,15 +3,15 @@ on: [pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       working-directory: ./data_logger
     steps:
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
       with:
-        elixir-version: '1.15.7'
-        otp-version: '26.1.2'
+        elixir-version: '1.19.5'
+        otp-version: '27.2'
     - name: Checkout
       uses: actions/checkout@v3
     - name: Setup Hex and Dependencies
