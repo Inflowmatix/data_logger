@@ -64,5 +64,33 @@ defmodule DataLoggerTest do
                |> Enum.member?({:test_event, %{destination: 3, send_async: true}})
       end)
     end
+
+    test "re-delivers to a topic after its controllers go idle and are torn down", %{
+      memory_destination: memory_destination
+    } do
+      # First delivery starts the per-topic sub-tree and subscribes the controllers.
+      :ok = DataLogger.log("readd_prefix", {memory_destination, :first_event})
+      _ = MemoryDestination.get_data_per_topic(memory_destination, 2)
+
+      # Let the topic go idle: controllers self-stop after their inactivity timeout
+      # (~1s) and, being significant children under auto_shutdown: :all_significant,
+      # the per-topic supervisor tears itself down too — clearing its registry entry.
+      Process.sleep(1_500)
+
+      refute {DataLogger.Registry, {DataLogger.Destination.Supervisor, "readd_prefix"}}
+             |> Registry.whereis_name()
+             |> is_pid(),
+             "expected the idle topic supervisor to have been torn down"
+
+      # Regression: before the fix, the lingering supervisor blocked recreation and
+      # this second log was silently dropped (dispatched to zero subscribers).
+      :ok = DataLogger.log("readd_prefix", {memory_destination, :second_event})
+
+      data = MemoryDestination.get_data_per_topic(memory_destination, 4)
+
+      assert Map.get(data, "readd_prefix") |> Enum.member?({:first_event, %{destination: 1}})
+      assert Map.get(data, "readd_prefix") |> Enum.member?({:second_event, %{destination: 1}})
+      assert Map.get(data, "readd_prefix") |> Enum.member?({:second_event, %{destination: 2}})
+    end
   end
 end
