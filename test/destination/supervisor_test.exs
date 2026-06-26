@@ -19,9 +19,14 @@ defmodule DataLogger.Destination.SupervisorTest do
     %{supervisor: supervisor_pid}
   end
 
-  test "supervises as many worker processes as configured destinations", %{
+  test "supervises a worker per destination, then auto-shuts-down once they go idle", %{
     supervisor: supervisor_pid
   } do
+    # The supervisor is linked to us via start_link; trap exits so its
+    # auto-shutdown doesn't take the test process down with it.
+    Process.flag(:trap_exit, true)
+    ref = Process.monitor(supervisor_pid)
+
     assert Supervisor.count_children(supervisor_pid) == %{
              active: 2,
              specs: 2,
@@ -37,10 +42,15 @@ defmodule DataLogger.Destination.SupervisorTest do
     assert Process.alive?(pid1)
     assert Process.alive?(pid2)
 
-    Process.sleep(1500)
+    # Controllers self-stop after their inactivity timeout (~1s). Because they are
+    # significant children and the supervisor uses auto_shutdown: :all_significant,
+    # the supervisor then tears itself down too — releasing its registry entry so a
+    # subsequent DataLogger.log/2 recreates (and re-subscribes) the whole sub-tree.
+    assert_receive {:DOWN, ^ref, :process, ^supervisor_pid, _reason}, 3_000
 
     refute Process.alive?(pid1)
     refute Process.alive?(pid2)
+    refute Process.alive?(supervisor_pid)
   end
 
   test "supervises only the processes with the right topic, if prefix is used" do
