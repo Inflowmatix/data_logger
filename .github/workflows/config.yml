@@ -13,7 +13,7 @@ jobs:
         elixir-version: '1.19.5'
         otp-version: '27.2'
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
     - name: Setup Hex and Dependencies
       run: |
         mix local.hex --force
