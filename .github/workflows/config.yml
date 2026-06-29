@@ -1,5 +1,8 @@
 name: Test Data Logger and publish
-on: [pull_request]
+on:
+  pull_request:
+  push:
+    branches: [master]
 
 jobs:
   build:
@@ -30,3 +33,20 @@ jobs:
         MIX_ENV=test mix format --check-formatted
         MIX_ENV=test mix test
       working-directory: /home/runner/work/data_logger/data_logger
+    - name: Publish to Hex (Inflowmatix org)
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      run: |
+        set +e
+        output=$(mix hex.publish package --yes 2>&1)
+        status=$?
+        echo "$output"
+        if [ $status -ne 0 ]; then
+          if echo "$output" | grep -qiE "has already been published|already released"; then
+            echo "::notice::Version already published to Hex, skipping."
+            exit 0
+          fi
+          exit $status
+        fi
+      working-directory: /home/runner/work/data_logger/data_logger
+      env:
+        HEX_API_KEY: ${{ secrets.HEX_KEY }}
