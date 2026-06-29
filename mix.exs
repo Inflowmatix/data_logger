@@ -1,7 +1,7 @@
 defmodule DataLogger.MixProject do
   use Mix.Project
 
-  @version "0.6.0"
+  @version "0.6.1"
 
   def project do
     [
@@ -38,6 +38,7 @@ defmodule DataLogger.MixProject do
   defp package do
     [
       name: "data_logger",
+      organization: "inflowmatix",
       maintainers: ["Inflowmatix"],
       licenses: ["MIT License"],
       links: %{"GitHub" => "https://github.com/Inflowmatix/data_logger"},
